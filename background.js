@@ -11,8 +11,10 @@ chrome.runtime.onConnect.addListener((port) => {
   if (port.name === "content") {
     contentPort = port;
     console.log("Content script connected");
+    contentPort.postMessage({ action: "init" });
   }
 });
+
 
 chrome.contextMenus.removeAll(function() {
     chrome.contextMenus.create({ id: "newSubject", title: "New Subject", contexts: ["all"] });
@@ -22,10 +24,9 @@ chrome.contextMenus.removeAll(function() {
   });
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
-    console.log("Clicked");
-  if (tab.id === openaiTabId) {
+    console.log("OpenAI tab clicked")
     if (info.menuItemId === "newSubject") {
-        console.log("New Sub Clicked");
+      console.log("New Sub Clicked");
       contentPort.postMessage({ action: "clickButton" });
     } else if (info.menuItemId === "addPrompt") {
       chrome.tabs.executeScript(tab.id, { code: "window.getSelection().toString();" }, (result) => {
@@ -41,7 +42,6 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       const generatedString = prompt + " " + context;
       chrome.tabs.executeScript(tab.id, { code: `document.activeElement.value += "\${generatedString}";` });
     }
-  }
 });
 
 
@@ -58,5 +58,6 @@ chrome.runtime.onInstalled.addListener(async () => {
       if (!results[0].result) {
         chrome.tabs.update(openaiTabId, { active: true });
       }
+      chrome.tabs.reload(openaiTabId);
     }
   });
