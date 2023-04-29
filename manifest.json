@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "OpenAI Chat Helper",
+    "name": "Pumkin",
     "version": "1.0",
     "description": "A Chrome extension to interact with chat.openai.com",
     "permissions": ["tabs", "contextMenus", "activeTab", "storage", "scripting", "webNavigation"],
