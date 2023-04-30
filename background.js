@@ -62,7 +62,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       promptClicked = true;
     } 
   
-  else if (info.menuItemId === "addContext" && promptClicked) {
+  else if (info.menuItemId === "addContext") {
       addSelectedTextToContext(info, tab);
       contextClicked = true;
     } 

@@ -3,6 +3,7 @@ const connection = chrome.runtime.connect({ name: "content" });
 
 let received_prompt = "";
 let intervalId;
+let response_num = 0;
 
 console.log("Content script loaded")
 
@@ -14,6 +15,7 @@ connection.onMessage.addListener(async (message, sender) => {
       if (message.action === "click_New_chat") {
         console.log("New chat clicked")
         click_New_chat();
+        response_num = 0;
       }
     
       else if (message.action === "generate") {
@@ -45,20 +47,8 @@ function click_New_chat() {
 async function generateHere(received_prompt) {
 
   return new Promise(async (resolve) => {
-  var textBox = document.evaluate("//*[@id='__next']/div[2]/div[2]/main/div[2]/form/div/div[2]/textarea", 
-  document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   
-  if (textBox) {
-    textBox.dispatchEvent(new Event('focus'));
-    var originalText = textBox.value;
-    textBox.value = received_prompt; // sets the textbox value to the desired text
-    const send_button = document.evaluate("//*[@id='__next']/div[2]/div[2]/main/div[2]/form/div/div[2]/button", 
-    document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-    if (send_button) {
-      send_button.disabled = false; 
-      send_button.click();
-      send_button.disabled = true; } 
-  }
+  write_text(received_prompt)
 
   await new Promise((resolveInterval) => {
     intervalId = setInterval(() => {
@@ -69,19 +59,30 @@ async function generateHere(received_prompt) {
     }, 3000);
   });
 
-  const generated_text_xpath = '//*[@id="__next"]/div[2]/div[2]/main/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div';
-  const element = document.evaluate(generated_text_xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  const output_Text = extract_text()
   
-  let output_text = '';
-  for (let i = 0; i < element.childNodes.length; i++) {
-    const childNode = element.childNodes[i];
-    if (childNode.nodeName === 'P') {
-      output_text += childNode.textContent.trim() + '\n\n';
-    }
-  }
-  resolve(output_text);
+  resolve(output_Text);
   });
 };
+
+
+function write_text(received_prompt){
+
+  const write_xpath = "//*[@id='__next']/div[2]/div[2]/main/div[2]/form/div/div[2]/textarea"
+  var write_textbox = document.evaluate(write_xpath , document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+  
+  if (write_textbox) {
+    write_textbox.dispatchEvent(new Event('focus'));
+    var originalText = write_textbox.value;
+    write_textbox.value = received_prompt; // sets the textbox value to the desired text
+    const send_button = document.evaluate("//*[@id='__next']/div[2]/div[2]/main/div[2]/form/div/div[2]/button", 
+    document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+    if (send_button) {
+      send_button.disabled = false; 
+      send_button.click();
+      send_button.disabled = true; } 
+  }
+}
 
 
 function check_regenerate_button() {
@@ -96,5 +97,87 @@ function check_regenerate_button() {
     return false; // return false when the button is not found
   }
 }
+
+
+function extract_text(){
+  
+  response_num +=2;
+  const generated_text_xpath = `//*[@id="__next"]/div[2]/div[2]/main/div[1]/div/div/div/div[${response_num}]/div/div[2]/div[1]/div`;
+  console.log(generated_text_xpath);
+  const div_element = document.evaluate(generated_text_xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+  const html_text = `${div_element.singleNodeValue.innerHTML}`
+
+  console.log("HTML text: ", html_text)
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html_text, 'text/html');
+  const output_Text = extract_text_from_html(doc.querySelector('.markdown'));
+
+  return output_Text
+}
+
+
+function extract_text_from_html(element) {
+
+    let text = '';
+  
+    for (const childNode of element.childNodes) {
+      if (childNode.nodeType === Node.TEXT_NODE) {
+        text += childNode.textContent;
+      } else if (childNode.nodeType === Node.ELEMENT_NODE) {
+        const tagName = childNode.tagName;
+  
+        switch (tagName) {
+          case 'P':
+          case 'DIV':
+          case 'H1':
+          case 'H2':
+          case 'H3':
+          case 'H4':
+          case 'H5':
+          case 'H6':
+            text += extract_text_from_html(childNode) + '\n\n';
+            break;
+          case 'UL':
+          case 'OL':
+            text += extract_text_from_html(childNode) + '\n';
+            break;
+          case 'LI':
+            text += '- ' + extract_text_from_html(childNode) + '\n';
+            break;
+          case 'TABLE':
+            text += extract_text_from_html(childNode) + '\n';
+            break;
+          case 'TR':
+            text += extract_text_from_html(childNode) + '\n';
+            break;
+          case 'TD':
+          case 'TH':
+            text += extract_text_from_html(childNode) + ' | ';
+            break;
+          case 'BR':
+            text += '\n';
+            break;
+          case 'A':
+            text += childNode.textContent + ' (' + childNode.href + ') ';
+            break;
+          case 'IMG':
+            text += '[Image: ' + childNode.src + '] ';
+            break;
+          case 'PRE':
+          case 'CODE':
+            text += '\n```\n' + extract_text_from_html(childNode) + '\n```\n';
+            break;
+          case 'BLOCKQUOTE':
+            text += '> ' + extract_text_from_html(childNode) + '\n';
+            break;
+          default:
+            text += extract_text_from_html(childNode);
+        }
+      }
+    }
+  
+    return text;
+}
+  
 
 
