@@ -19,7 +19,7 @@ chrome.runtime.onConnect.addListener((port) => {
 
 
 chrome.contextMenus.removeAll(function() {
-    chrome.contextMenus.create({ id: "newChat", title: "New Subject", contexts: ["selection"] });
+    chrome.contextMenus.create({ id: "newChat", title: "New Subject", contexts: ["selection", "editable"] });
     chrome.contextMenus.create({ id: "addPrompt", title: "Add Prompt", contexts: ["selection"] });
     chrome.contextMenus.create({ id: "addContext", title: "Add Context", contexts: ["selection"] });
     chrome.contextMenus.create({ id: "generateHere", title: "Generate Here", contexts: ["editable"] });
@@ -93,9 +93,10 @@ chrome.runtime.onInstalled.addListener(async () => {
   });
 
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "generated" && message.prompt === complete_prompt) {
       generatedText = message.output;
+      console.log("Generated text aaya");
       console.log("Generated text received: ", generatedText);
       prompt_main = "";
       context = "";
