@@ -71,12 +71,17 @@ async function generateHere(received_prompt) {
 
   const generated_text_xpath = '//*[@id="__next"]/div[2]/div[2]/main/div[1]/div/div/div/div[2]/div/div[2]/div[1]/div/div';
   const element = document.evaluate(generated_text_xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-  console.log("Generated text: ", element.textContent)
-  const paragraphs = element.textContent.trim().split('\n');
-  const output_text = paragraphs.join('\n\n');
+  
+  let output_text = '';
+  for (let i = 0; i < element.childNodes.length; i++) {
+    const childNode = element.childNodes[i];
+    if (childNode.nodeName === 'P') {
+      output_text += childNode.textContent.trim() + '\n\n';
+    }
+  }
   resolve(output_text);
-});
-}
+  });
+};
 
 
 function check_regenerate_button() {
