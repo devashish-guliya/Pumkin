@@ -28,7 +28,9 @@ insertText_connection.onMessage.addListener(function (request){
     console.log(active_textbox.tagName.toLowerCase());
         if (active_textbox.tagName.toLowerCase() === 'input' || active_textbox.tagName.toLowerCase() === 'textarea') {
           active_textbox.value = request.text;
+          console.log("2222222")
         } else if (active_textbox.getAttribute('contentEditable') === 'true') {
+          console.log("3333333")
           active_textbox.innerHTML = request.text;
         }
       }
@@ -43,7 +45,8 @@ function isEditable(element) {
   const tagName = element.tagName.toLowerCase();
   const contentEditable = element.getAttribute('contentEditable');
 
-  if (tagName === 'textarea' || tagName === 'input' || contentEditable === 'true') {
+  if (tagName === 'textarea' || tagName === 'input' || contentEditable === 'true' || tagName === 'div' || tagName === 'span') {
+    console.log("true")
     return true;
   }
 

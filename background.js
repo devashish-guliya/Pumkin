@@ -23,15 +23,18 @@ chrome.runtime.onConnect.addListener((port) => {
       
       if (port.sender.tab) {
         insertTextPorts[port.sender.tab.id] = port;
-        console.log("port.sender.tab.id: ", port.sender.tab.id);
+        console.log("connected ", port.sender.tab.id);
         console.log("insertTextPorts[port.sender.tab.id]: ", insertTextPorts[port.sender.tab.id]);
       }      
   
       port.onDisconnect.addListener((port) => {
         
+        console.log("disconnected ", port.sender.tab.id);
         port.sender.tab &&
           delete insertTextPorts[port.sender.tab.id];
       });
+
+      console.log("insertTextPorts : ", insertTextPorts);
     } 
 });
 
@@ -53,18 +56,21 @@ function createPrompt() {
   
 function addSelectedTextToPrompt(info, tab) {
     prompt_main += info.selectionText;
+    console.log("prompt : " , prompt_main);
     
 }
   
 function addSelectedTextToContext(info, tab) {
     context += "Here is the context: " + info.selectionText;
-    
+    console.log("context : " , context);
 }
   
 function generateHere(info, tab) {
   complete_prompt = prompt_main + " " + context;
   
   insertTabId = tab.id;
+  
+  console.log("tewfsGg");
   console.log(insertTabId);
 
   console.log(insertTextPorts[insertTabId]);
