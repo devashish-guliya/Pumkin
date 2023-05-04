@@ -19,6 +19,10 @@
       {
         "matches": ["https://chat.openai.com/*"],
         "js": ["content.js"]
+      },
+      {
+        "matches": ["*://*/*"],
+        "js": ["insertText.js"]
       }
     ],
     "icons": {

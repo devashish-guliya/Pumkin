@@ -1,5 +1,5 @@
 //content.js
-const connection = chrome.runtime.connect({ name: "content" });
+const content_connection = chrome.runtime.connect({ name: "content" });
 
 let received_prompt = "";
 let intervalId;
@@ -7,7 +7,7 @@ let response_num = 0;
 
 console.log("Content script loaded")
 
-connection.onMessage.addListener(async (message, sender) => {
+content_connection.onMessage.addListener(async (message, sender) => {
   console.log("Message received: ", message.name);
 
     console.log("Background script connected");
@@ -59,7 +59,7 @@ async function generateHere(received_prompt) {
     }, 3000);
   });
 
-  const output_Text = extract_text()
+  const output_Text = extract_text().trim()
   
   resolve(output_Text);
   });
@@ -72,7 +72,7 @@ function write_text(received_prompt){
   var write_textbox = document.evaluate(write_xpath , document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   
   if (write_textbox) {
-    write_textbox.dispatchEvent(new Event('focus'));
+    //write_textbox.dispatchEvent(new Event('focus'));
     var originalText = write_textbox.value;
     write_textbox.value = received_prompt; // sets the textbox value to the desired text
     const send_button = document.evaluate("//*[@id='__next']/div[2]/div[2]/main/div[2]/form/div/div[2]/button", 
@@ -107,7 +107,6 @@ function extract_text(){
   const div_element = document.evaluate(generated_text_xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
   const html_text = `${div_element.singleNodeValue.innerHTML}`
 
-  console.log("HTML text: ", html_text)
   const parser = new DOMParser();
   const doc = parser.parseFromString(html_text, 'text/html');
   const output_Text = extract_text_from_html(doc.querySelector('.markdown'));
