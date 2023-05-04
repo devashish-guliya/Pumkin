@@ -5,14 +5,8 @@ console.log("Connected to background script:", insertText_connection);
 let active_textbox = null;
 let lastClickedTextbox = null;
 
-document.addEventListener("mousedown", function (element) {
-  if (element.button === 2) { // Right-click
-    console.log("here")
-    if (isEditable(element.target)) {
-      lastClickedTextbox = element.target;
-      console.log("Last clicked textbox: ", lastClickedTextbox);
-    }
-  }
+document.addEventListener('focusin', () => {
+  focusedElement = document.activeElement;
 });
 
 
@@ -20,18 +14,25 @@ document.addEventListener("mousedown", function (element) {
 insertText_connection.onMessage.addListener(function (request){
 
   if (request.action === "setActiveTextbox") {
-    active_textbox = lastClickedTextbox;
+    active_textbox = focusedElement;
 
-  } else if (request.action === "insertText") {
+  } 
+  
+  else if (request.action === "insertText") {
 
-    console.log(active_textbox)
-    console.log(active_textbox.tagName.toLowerCase())
-        if (active_textbox.tagName.toLowerCase() === 'input' || active_textbox.tagName.toLowerCase() === 'textarea') {
-          active_textbox.value = request.text;
-        } else if (active_textbox.getAttribute('contentEditable') === 'true') {
-          active_textbox.innerHTML = request.text;
-        }
+      console.log(active_textbox)
+      console.log(active_textbox.tagName.toLowerCase())
+
+      if (focusedElement && focusedElement.tagName === 'INPUT') {
+        focusedElement.value += request.text;
+      } 
+      else if (focusedElement && focusedElement.isContentEditable) {
+        document.execCommand('insertText', false, request.text);
+      } 
+      else {
+        console.error("No active textbox found");
       }
+  }
 
   else{
     console.log("Nhi hua");
@@ -39,16 +40,40 @@ insertText_connection.onMessage.addListener(function (request){
 });
 
 
-function isEditable(element) {
-  const tagName = element.tagName.toLowerCase();
-  const contentEditable = element.getAttribute('contentEditable');
+/* document.addEventListener('focusin', () => {
+  focusedElement = document.activeElement;
+});
 
-  if (tagName === 'textarea' || tagName === 'input' || contentEditable === 'true') {
-    return true;
+
+
+insertText_connection.onMessage.addListener(function (request){
+
+  if (request.action === "setActiveTextbox") {
+    active_textbox = focusedElement;
+
+  } 
+  
+  else if (request.action === "insertText") {
+
+      console.log(active_textbox)
+      console.log(active_textbox.tagName.toLowerCase())
+
+      if (focusedElement && focusedElement.tagName === 'INPUT') {
+        focusedElement.value += request.text;
+      } 
+      else if (focusedElement && focusedElement.isContentEditable) {
+        document.execCommand('insertText', false, request.text);
+      } 
+      else {
+        console.error("No active textbox found");
+      }
   }
 
-  return false;
-}
+  else{
+    console.log("Nhi hua");
+    }
+});
+ */
 
 /* function replaceSelectedText(elem, text) {
     var start = elem.selectionStart;
@@ -64,3 +89,4 @@ function isEditable(element) {
         elem.selectionEnd = elem.selectionStart;
     }
 } */
+
