@@ -30,7 +30,8 @@ content_connection.onMessage.addListener(async (message, sender) => {
 
 function click_New_chat() {
 
-  const new_chat_xpath = '//*[@id="__next"]/div[2]/div[1]/div/div/nav/a';
+  const new_chat_xpath = '//*[@id="__next"]/div[2]/div[1]/div/div/div/nav/a';                  
+                  
   const new_chat_button = document.evaluate(new_chat_xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   if (new_chat_button) { 
     if (new_chat_button.offsetParent !== null && !new_chat_button.disabled) {
@@ -68,14 +69,17 @@ async function generateHere(received_prompt) {
 
 function write_text(received_prompt){
 
-  const write_xpath = "//*[@id='__next']/div[2]/div[2]/main/div[2]/form/div/div[2]/textarea"
+  const write_xpath = '//*[@id="__next"]/div[2]/div[2]/div/main/div[3]/form/div/div[2]/textarea';
+                       
   var write_textbox = document.evaluate(write_xpath , document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
   
   if (write_textbox) {
     //write_textbox.dispatchEvent(new Event('focus'));
     var originalText = write_textbox.value;
     write_textbox.value = received_prompt; // sets the textbox value to the desired text
-    const send_button = document.evaluate("//*[@id='__next']/div[2]/div[2]/main/div[2]/form/div/div[2]/button", 
+    const send_button = document.evaluate('//*[@id="__next"]/div[2]/div[2]/div/main/div[3]/form/div/div[2]/button', 
+                                           
+
     document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
     if (send_button) {
       send_button.disabled = false; 
@@ -87,7 +91,8 @@ function write_text(received_prompt){
 
 function check_regenerate_button() {
   console.log("Regenerate button reached");
-  const regenerate_button_xpath = '//*[@id="__next"]/div[2]/div[2]/main/div[2]/form/div/div[1]/div/button/div[contains(text(), "Regenerate response")]';
+  const regenerate_button_xpath = '//*[@id="__next"]/div[2]/div[2]/div/main/div[3]/form/div/div[1]/div/button/div[contains(text(), "Regenerate response")]';
+                                   
   const result = document.evaluate(regenerate_button_xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
   const button = result.singleNodeValue;
   if (button) {
@@ -102,7 +107,8 @@ function check_regenerate_button() {
 function extract_text(){
   
   response_num +=2;
-  const generated_text_xpath = `//*[@id="__next"]/div[2]/div[2]/main/div[1]/div/div/div/div[${response_num}]/div/div[2]/div[1]/div`;
+  const generated_text_xpath = `//*[@id="__next"]/div[2]/div[2]/div/main/div[2]/div/div/div/div[${response_num}]/div/div[2]/div[1]/div`;
+                                //*[@id="__next"]/div[2]/div[2]/div/main/div[2]/div/div/div/div[2]              /div/div[2]/div[1]/div/div
   console.log(generated_text_xpath);
   const div_element = document.evaluate(generated_text_xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
   const html_text = `${div_element.singleNodeValue.innerHTML}`
